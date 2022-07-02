@@ -1,15 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 
-namespace FriendsFinanceApi.Repository.Models
+namespace FriendsFinanceApi.Models
 {
-    public class User
+    public class UserResponse
     {
-          
-        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
 
+        public int Dolghen { get; set; }
     }
 
 }

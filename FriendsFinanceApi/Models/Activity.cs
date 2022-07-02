@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 
 
-namespace FriendsFinanceApi.Repository.Models
+namespace FriendsFinanceApi.Models
 {
 
     public class Activity
@@ -13,7 +13,7 @@ namespace FriendsFinanceApi.Repository.Models
         public string Name { get; set; }
 
         public int OwnerId { get; set; }
-        public User? Owner { get; set; }
+        public UserResponse? Owner { get; set; }
 
         public int Sum { get; set; }
 
@@ -24,11 +24,13 @@ namespace FriendsFinanceApi.Repository.Models
     {
         public int Id { get; set; }
         public Activity? Activity { get; set; }
-        public User? User { get; set; }
+        public UserResponse? User { get; set; }
         public int UserId { get; set; }
         public int ActivityId { get; set; }
 
         public bool ActivityAcceptedByUser { get; set; }
+
+
     }
 
 }

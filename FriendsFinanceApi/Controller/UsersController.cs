@@ -16,6 +16,11 @@ namespace FriendsFinanceApi.Controller
     {
         private readonly DataContext _context;
 
+        private async Task<int> getCurrentUserId()
+        {
+            return 1;
+        }
+
         public UsersController(DataContext context)
         {
             _context = context;
@@ -23,23 +28,48 @@ namespace FriendsFinanceApi.Controller
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<Models.UserResponse>>> GetUsers()
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
-            return await _context.Users.ToListAsync();
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
+            var userId = await getCurrentUserId();
+            var activities = _context.Activitys.Where(x => x.OwnerId == userId).ToList();
+            
+            Dictionary<int, int> sum = new Dictionary<int, int>();
+            foreach(var activity in activities)
+            {
+                var activitiesMembers = _context.ActivityMembers.Where(x => x.Activity.OwnerId == userId && x.ActivityId == activity.Id).ToList();
+                var count = activitiesMembers.Count() + 1;
+                foreach (var member in activitiesMembers)
+                {
+                    sum.TryGetValue(member.UserId, out int result);
+                    result += activity.Sum / count;
+                    sum[member.UserId] = result;
+                }
+            }
+            foreach(var user in sum)
+            {
+                Console.WriteLine($"{user.Key} - {user.Value}");
+            }
+            var users = await _context.Users.Where(x => sum.Select(x => x.Key).Contains(x.Id)).ToListAsync();
+            return users.Select(x => new Models.UserResponse()
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Dolghen = sum[x.Id]
+            }).ToList();
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(string id)
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
@@ -86,10 +116,10 @@ namespace FriendsFinanceApi.Controller
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-          if (_context.Users == null)
-          {
-              return Problem("Entity set 'ApplicationContext.Users'  is null.");
-          }
+            if (_context.Users == null)
+            {
+                return Problem("Entity set 'ApplicationContext.Users'  is null.");
+            }
             _context.Users.Add(user);
             try
             {

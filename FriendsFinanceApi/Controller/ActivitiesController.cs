@@ -52,7 +52,6 @@ namespace FriendsFinanceApi.Controller
             {
                 return NotFound();
             }
-            activity.Members = await _context.ActivityMembers.Where(x => x.ActivityId == id).ToListAsync();
             return activity;
         }
 
@@ -98,7 +97,7 @@ namespace FriendsFinanceApi.Controller
             }
             activity.OwnerId = await getCurrentUserId();
             activity.Owner = null;
-            activity.Members = null;
+  
             _context.Activitys.Add(activity);
             await _context.SaveChangesAsync();
 
