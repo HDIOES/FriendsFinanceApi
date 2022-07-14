@@ -8,7 +8,7 @@ namespace FriendsFinanceApi.Models
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public int Dolghen { get; set; }
+        public int DebtSum { get; set; }
     }
 
 }

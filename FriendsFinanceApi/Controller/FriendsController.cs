@@ -28,18 +28,65 @@ namespace FriendsFinanceApi.Controller
 
         // GET: api/Friends
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Friends>>> GetFriends()
+        public async Task<ActionResult<IEnumerable<Models.UserResponse>>> GetFriends()
+        {
+
+
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
+            var userId = await getCurrentUserId();
+            var activities = _context.Activitys.Where(x => x.OwnerId == userId).ToList();
+
+            Dictionary<int, int> sum = new Dictionary<int, int>();
+            foreach (var activity in activities)
+            {
+                var activitiesMembers = _context.ActivityMembers.Where(x => x.Activity.OwnerId == userId && x.ActivityId == activity.Id).ToList();
+                var count = activitiesMembers.Count() + 1;
+                foreach (var member in activitiesMembers)
+                {
+                    sum.TryGetValue(member.UserId, out int result);
+                    result += activity.Sum / count;
+                    sum[member.UserId] = result;
+                }
+            }
+            foreach (var user in sum)
+            {
+                Console.WriteLine($"{user.Key} - {user.Value}");
+            }
+            var users = await _context.Users.Where(x => sum.Select(x => x.Key).Contains(x.Id)).ToListAsync();
+            var myFriends = await _context.Friends.Where(x => x.RequestedById == 1).Select(x => x.Friend).ToListAsync();
+            var response = new List<Models.UserResponse>();
+            myFriends.ForEach(item => {
+                sum.TryGetValue(item.Id, out var res);
+                response.Add(new Models.UserResponse()
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    DebtSum = res
+                });
+            });
+            return response;
+        }
+
+        [HttpGet("search/{name}")]
+        public async Task<ActionResult<IEnumerable<Models.UserResponse>>> Search(string name)
         {
             if (_context.Friends == null)
             {
                 return NotFound();
             }
-            return await _context.Friends.ToListAsync();
+            return await _context.Friends.Where(x => x.RequestedById == 1 && x.Friend.Name.ToLower().Contains(name.ToLower())).Select(x => new Models.UserResponse()
+            {
+                Id = x.Friend.Id,
+                Name = x.Friend.Name
+            }).ToListAsync();
         }
 
         // GET: api/Friends/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Friends>> GetFriends(int id)
+        public async Task<ActionResult<FriendModel>> GetFriends(int id)
         {
             if (_context.Friends == null)
             {
@@ -58,16 +105,21 @@ namespace FriendsFinanceApi.Controller
         // POST: api/Friends
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Friends>> PostFriends(Friends friends)
+        public async Task<ActionResult<FriendModel>> PostFriends(int friendId)
         {
             if (_context.Friends == null)
             {
                 return Problem("Entity set 'DataContext.Friends'  is null.");
             }
-            _context.Friends.Add(friends);
+            var friend = new FriendModel()
+            {
+                FriendId = friendId,
+                RequestedById = 1
+            };
+            _context.Friends.Add(friend);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetFriends", new { id = friends.Id }, friends);
+            return CreatedAtAction("GetFriends", new { id = friend.Id }, friend);
         }
 
         // DELETE: api/Friends/5

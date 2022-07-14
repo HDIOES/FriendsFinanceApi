@@ -1,0 +1,15 @@
+﻿version: "3.8"
+services:
+  ffapi:
+    image:  192.168.31.168:49153/friendsfinanceapi:dev
+    ports: 
+    - 48443:443
+    - 48080:80
+  
+  postgres:
+    image: postgres:13.5
+    environment:
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ffapp
+

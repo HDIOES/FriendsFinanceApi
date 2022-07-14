@@ -11,7 +11,7 @@ namespace FriendsFinanceApi.Repository
 
         public DbSet<ActivityMember> ActivityMembers { get; set; }
 
-        public DbSet<Friends> Friends { get; set; }
+        public DbSet<FriendModel> Friends { get; set; }
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{

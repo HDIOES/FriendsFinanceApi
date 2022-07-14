@@ -26,6 +26,8 @@ namespace FriendsFinanceApi.Controller
             _context = context;
         }
 
+        
+
         // GET: api/Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Models.UserResponse>>> GetUsers()
@@ -58,13 +60,31 @@ namespace FriendsFinanceApi.Controller
             {
                 Id = x.Id,
                 Name = x.Name,
-                Dolghen = sum[x.Id]
+                DebtSum = sum[x.Id]
             }).ToList();
+        }
+
+
+        [HttpGet("search/{name}")]
+        public async Task<ActionResult<IEnumerable<User>>> Search(string name)
+        {
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
+            var user = await _context.Users.Where(x => x.Name.ToLower().Contains(name.ToLower()) && x.Id != 1).ToListAsync();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return user;
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(string id)
+        public async Task<ActionResult<User>> GetUser(int id)
         {
             if (_context.Users == null)
             {

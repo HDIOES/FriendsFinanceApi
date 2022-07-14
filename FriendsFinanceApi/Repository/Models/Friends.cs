@@ -1,6 +1,6 @@
 ﻿namespace FriendsFinanceApi.Repository.Models
 {
-    public class Friends
+    public class FriendModel
     {
         public int Id { get; set; }
 
